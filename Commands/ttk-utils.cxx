@@ -25,6 +25,7 @@
 #include "itkPermute23TensorCoefficientsCommandFactory.h"
 #include "itkSubtractImageCommandFactory.h"
 #include "itkAverage4DImageCommandFactory.h"
+#include "itkTensorLogCommandFactory.h"
 
 #include "itkCommandObjectFactory.h"
 
@@ -52,6 +53,7 @@ int main (int narg, char *args[])
   itk::Permute23TensorCoefficientsCommandFactory::RegisterOneFactory();
   itk::SubtractImageCommandFactory::RegisterOneFactory();
   itk::Average4DImageCommandFactory::RegisterOneFactory();
+  itk::TensorLogCommandFactory::RegisterOneFactory();
   
   if (narg<2) {
     std::cout << "Software Tensor ToolKit (c)INRIA 2010, version " << TTK_VERSION << "\n";

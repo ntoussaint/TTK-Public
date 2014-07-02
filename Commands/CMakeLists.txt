@@ -180,6 +180,8 @@
     itkSubtractImageCommandFactory.cxx
     itkAverage4DImageCommand.cxx
     itkAverage4DImageCommandFactory.cxx
+    itkTensorLogCommand.cxx
+    itkTensorLogCommandFactory.cxx
   )
 
   add_library(ttkUtilCommands ${TTK_BUILD_TYPE}
