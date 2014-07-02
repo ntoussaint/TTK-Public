@@ -61,26 +61,26 @@ namespace itk
     typedef typename TensorImageType::SpacingType SpacingType;
     typedef typename TensorImageType::PointType   PointType;
     typedef typename TensorImageType::DirectionType DirectionType;
-    
 
-
-	static const unsigned int DegreesOfFreedom = TensorDimension*(TensorDimension+1)/2;
+    static const unsigned int DegreesOfFreedom = TensorDimension*(TensorDimension+1)/2;
 
     /** Actually read the data */
     void Read(void);
 
     /** Actually read the data */
     void Write(void);
-
     
     itkSetStringMacro(FileName);
     itkGetStringMacro(FileName);
 
+    itkSetClampMacro (UseFSLStyle, unsigned int, 0, 1);
+    itkGetConstMacro (UseFSLStyle, unsigned int);
+    itkBooleanMacro (UseFSLStyle);
+    
     using Superclass::SetInput;
     itkSetConstObjectMacro(Input,  TensorImageType);
     itkGetConstObjectMacro(Input,  TensorImageType);
     itkGetObjectMacro(Output, TensorImageType);
-    
     
   protected:
 
@@ -89,6 +89,7 @@ namespace itk
       m_Output = TensorImageType::New();
       itk::NrrdImageIOFactory::RegisterOneFactory();
       itk::NiftiImageIOFactory::RegisterOneFactory();
+      m_UseFSLStyle = 0;
     }
   ~TensorImageIO(){};
   
@@ -104,15 +105,16 @@ namespace itk
     void ReadNrrd (const char* filename);
     void ReadInrimage (const char* filename);
     void ReadNifti (const char* filename);
+    void ReadNiftiFSL (const char* filename);
     void ReadMha (const char* filename);
 
     void WriteVTK (const char* filename);
     void WriteNrrd (const char* filename);
     void WriteInrimage (const char* filename);
-	void WriteNifti (const char* filename);
+    void WriteNifti (const char* filename);
+    void WriteNiftiFSL (const char* filename);
     void WriteMha (const char* filename);
 
-    
   private:
 
     TensorImageIO (const Self&);
@@ -121,7 +123,8 @@ namespace itk
     std::string m_FileName;
     typename TensorImageType::ConstPointer m_Input; // purposely not implemented
     typename TensorImageType::Pointer m_Output; // purposely not implemented    
-        
+    
+    unsigned int m_UseFSLStyle;
   };
   
   

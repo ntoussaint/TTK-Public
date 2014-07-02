@@ -9,17 +9,19 @@
   Copyright (c) INRIA 2010. All rights reserved.
   See LICENSE.txt for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notices for more information.
 
-=========================================================================*/
+  =========================================================================*/
 #ifndef _itk_TensorImageIO_txx_
 #define _itk_TensorImageIO_txx_
 
 #include "itkTensorImageIO.h"
 
 #include "ttkConfigure.h"
+
+#include <cstdio>
 
 #ifdef TTK_USE_MIPS
 #include <inrimage/Inrimage.h>
@@ -233,7 +235,7 @@ namespace itk
     
     delete tens;    
 #else
-	std::cerr << "TTK was not compiled with inrimage support, sorry!" << std::endl;
+    std::cerr << "TTK was not compiled with inrimage support, sorry!" << std::endl;
 #endif
   }
   
@@ -370,167 +372,167 @@ namespace itk
     
     if (myIO->GetPixelType() != itk::ImageIOBase::DIFFUSIONTENSOR3D)
     {
-	// Two cases : image is stored as float or double
-    	if (myIO->GetComponentType() == itk::ImageIOBase::DOUBLE) 
-    	{
-      	  typedef itk::Vector<double, DegreesOfFreedom>     VectorType;
-      	  typedef itk::Image <VectorType, ImageDimension>   VectorImageType;
+      // Two cases : image is stored as float or double
+      if (myIO->GetComponentType() == itk::ImageIOBase::DOUBLE) 
+      {
+	typedef itk::Vector<double, DegreesOfFreedom>     VectorType;
+	typedef itk::Image <VectorType, ImageDimension>   VectorImageType;
     
-	  typedef itk::ImageFileReader<VectorImageType> ReaderType;
+	typedef itk::ImageFileReader<VectorImageType> ReaderType;
     
-	  typename ReaderType::Pointer myReader = ReaderType::New();
+	typename ReaderType::Pointer myReader = ReaderType::New();
       
-          myReader->SetFileName (filename);
-      	  myReader->SetImageIO(myIO);
+	myReader->SetFileName (filename);
+	myReader->SetImageIO(myIO);
      
-	  try
-      	  {
-            myReader->Update();
-      	  }
-      	  catch (itk::ExceptionObject &e)
-      	  {
-            std::cerr << e;
-            throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNrrd()");
-      	  }
+	try
+	{
+	  myReader->Update();
+	}
+	catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e;
+	  throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNrrd()");
+	}
     
-	  typename VectorImageType::Pointer myImage = myReader->GetOutput();
+	typename VectorImageType::Pointer myImage = myReader->GetOutput();
      
-	  if( m_Output )
-       	  {
-            m_Output->Initialize();
-      	  }
+	if( m_Output )
+	{
+	  m_Output->Initialize();
+	}
 
-      	  typename ImageType::RegionType region = myImage->GetLargestPossibleRegion();
+	typename ImageType::RegionType region = myImage->GetLargestPossibleRegion();
     
-	  m_Output->SetRegions (region);
-      	  m_Output->SetSpacing (myImage->GetSpacing());
-      	  m_Output->SetOrigin (myImage->GetOrigin());
-      	  m_Output->SetDirection (myImage->GetDirection());
+	m_Output->SetRegions (region);
+	m_Output->SetSpacing (myImage->GetSpacing());
+	m_Output->SetOrigin (myImage->GetOrigin());
+	m_Output->SetDirection (myImage->GetDirection());
  
-	  try
-      	  {
-       	    m_Output->Allocate();      
-      	  }
-      	  catch (itk::ExceptionObject &e)
-      	  {
-            std::cerr << e;
-            throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::Read() during allocation.");
-      	  }
+	try
+	{
+	  m_Output->Allocate();      
+	}
+	catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e;
+	  throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::Read() during allocation.");
+	}
     
-	  itk::ImageRegionConstIteratorWithIndex<VectorImageType>  itIn (myImage, myImage->GetLargestPossibleRegion());
-      	  itk::ImageRegionIteratorWithIndex<TensorImageType> itOut(m_Output, m_Output->GetLargestPossibleRegion());
+	itk::ImageRegionConstIteratorWithIndex<VectorImageType>  itIn (myImage, myImage->GetLargestPossibleRegion());
+	itk::ImageRegionIteratorWithIndex<TensorImageType> itOut(m_Output, m_Output->GetLargestPossibleRegion());
 
-      	  unsigned long numPixels = m_Output->GetLargestPossibleRegion().GetNumberOfPixels();
-      	  unsigned long step = numPixels/100;
-      	  unsigned int ind = 0;
+	unsigned long numPixels = m_Output->GetLargestPossibleRegion().GetNumberOfPixels();
+	unsigned long step = numPixels/100;
+	unsigned int ind = 0;
     
-	  this->UpdateProgress ( 0.0 );
+	this->UpdateProgress ( 0.0 );
     
-	  while(!itOut.IsAtEnd())
-       	  {
+	while(!itOut.IsAtEnd())
+	{
        	  
-            VectorType vec = itIn.Get();
-            TensorType tensor;
+	  VectorType vec = itIn.Get();
+	  TensorType tensor;
       
-              for( unsigned int j=0; j<DegreesOfFreedom; j++)
-              {
-                  tensor[j] = static_cast<typename TensorType::ValueType>(vec[j]);
-              }
+	  for( unsigned int j=0; j<DegreesOfFreedom; j++)
+	  {
+	    tensor[j] = static_cast<typename TensorType::ValueType>(vec[j]);
+	  }
               
-              itOut.Set (tensor);      
-              ++itOut;
-              ++itIn;
-              ++ind;
+	  itOut.Set (tensor);      
+	  ++itOut;
+	  ++itIn;
+	  ++ind;
               
-              if( (ind%step)==0 )
-              {
-                  this->UpdateProgress ( double(ind)/double(numPixels) );
-              }
+	  if( (ind%step)==0 )
+	  {
+	    this->UpdateProgress ( double(ind)/double(numPixels) );
+	  }
       
-	 }
+	}
 
-         this->UpdateProgress ( 1.0 );
-       }
-       else
-       {
-	 //Case image is in float
-      	 typedef itk::Vector<float, DegreesOfFreedom>     VectorType;
-      	 typedef itk::Image <VectorType, ImageDimension>   VectorImageType;
+	this->UpdateProgress ( 1.0 );
+      }
+      else
+      {
+	//Case image is in float
+	typedef itk::Vector<float, DegreesOfFreedom>     VectorType;
+	typedef itk::Image <VectorType, ImageDimension>   VectorImageType;
     
-	 typedef itk::ImageFileReader<VectorImageType> ReaderType;
+	typedef itk::ImageFileReader<VectorImageType> ReaderType;
     
-	 typename ReaderType::Pointer myReader = ReaderType::New();
+	typename ReaderType::Pointer myReader = ReaderType::New();
 	
-      	 myReader->SetFileName (filename);
-         myReader->SetImageIO(myIO);
+	myReader->SetFileName (filename);
+	myReader->SetImageIO(myIO);
      
-	 try
-      	 {
-           myReader->Update();
-      	 }
-      	 catch (itk::ExceptionObject &e)
-      	 {
-           std::cerr << e;
-           throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNrrd()");
-      	 }
+	try
+	{
+	  myReader->Update();
+	}
+	catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e;
+	  throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNrrd()");
+	}
     
-	 typename VectorImageType::Pointer myImage = myReader->GetOutput();
+	typename VectorImageType::Pointer myImage = myReader->GetOutput();
      
-	 if( m_Output )
-      	 {
-           m_Output->Initialize();
-      	 }
+	if( m_Output )
+	{
+	  m_Output->Initialize();
+	}
 
-      	 typename ImageType::RegionType region = myImage->GetLargestPossibleRegion();
+	typename ImageType::RegionType region = myImage->GetLargestPossibleRegion();
     
-	 m_Output->SetRegions (region);
-      	 m_Output->SetSpacing (myImage->GetSpacing());
-      	 m_Output->SetOrigin (myImage->GetOrigin());
-      	 m_Output->SetDirection (myImage->GetDirection());
+	m_Output->SetRegions (region);
+	m_Output->SetSpacing (myImage->GetSpacing());
+	m_Output->SetOrigin (myImage->GetOrigin());
+	m_Output->SetDirection (myImage->GetDirection());
  
-         try
-      	 {
-           m_Output->Allocate();      
-      	 }
-      	 catch (itk::ExceptionObject &e)
-      	 {
-           std::cerr << e;
-           throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::Read() during allocation.");
-      	 }
+	try
+	{
+	  m_Output->Allocate();      
+	}
+	catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e;
+	  throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::Read() during allocation.");
+	}
     
-	 itk::ImageRegionConstIteratorWithIndex<VectorImageType>  itIn (myImage, myImage->GetLargestPossibleRegion());
-      	 itk::ImageRegionIteratorWithIndex<TensorImageType> itOut(m_Output, m_Output->GetLargestPossibleRegion());
+	itk::ImageRegionConstIteratorWithIndex<VectorImageType>  itIn (myImage, myImage->GetLargestPossibleRegion());
+	itk::ImageRegionIteratorWithIndex<TensorImageType> itOut(m_Output, m_Output->GetLargestPossibleRegion());
 
-         unsigned long numPixels = m_Output->GetLargestPossibleRegion().GetNumberOfPixels();
-      	 unsigned long step = numPixels/100;
-      	 unsigned int ind = 0;
+	unsigned long numPixels = m_Output->GetLargestPossibleRegion().GetNumberOfPixels();
+	unsigned long step = numPixels/100;
+	unsigned int ind = 0;
     
-	 this->UpdateProgress ( 0.0 );
+	this->UpdateProgress ( 0.0 );
     
-	 while(!itOut.IsAtEnd())
-         {
-       	   VectorType vec = itIn.Get();
-           TensorType tensor;
+	while(!itOut.IsAtEnd())
+	{
+	  VectorType vec = itIn.Get();
+	  TensorType tensor;
            
-           for( unsigned int j=0; j<DegreesOfFreedom; j++)
-           {
-                tensor[j] = static_cast<typename TensorType::ValueType>(vec[j]);
-           }
+	  for( unsigned int j=0; j<DegreesOfFreedom; j++)
+	  {
+	    tensor[j] = static_cast<typename TensorType::ValueType>(vec[j]);
+	  }
 
-           itOut.Set (tensor);
+	  itOut.Set (tensor);
       
-	   ++itOut;
-           ++itIn;
-           ++ind;
+	  ++itOut;
+	  ++itIn;
+	  ++ind;
 
-           if( (ind%step)==0 )
-           {
-             this->UpdateProgress ( double(ind)/double(numPixels) );
-           }
+	  if( (ind%step)==0 )
+	  {
+	    this->UpdateProgress ( double(ind)/double(numPixels) );
+	  }
       
-	 }
+	}
 
-         this->UpdateProgress ( 1.0 );
+	this->UpdateProgress ( 1.0 );
       }    
     }
     else
@@ -636,19 +638,19 @@ namespace itk
     myIO->SetFileName(filename);
     myIO->ReadImageInformation();
     
-	
     unsigned int numComponents = myIO->GetNumberOfComponents();
     
     if( numComponents!=DegreesOfFreedom )
     {
       char message[512];
-      sprintf(message, "Error: Number of components should be: %d, and actually is: %d.", DegreesOfFreedom, numComponents);
-      throw itk::ExceptionObject(__FILE__,__LINE__,message);
+      std::sprintf(message, "Warning: Number of components should be: %d, and actually is: %d.\n Attempting reading the image as 4 dimension lower triangular image...", DegreesOfFreedom, numComponents);
+      itkWarningMacro( << message);
+      this->ReadNiftiFSL (filename);
+      return;
     }
     
     typedef itk::Vector<PixelType, DegreesOfFreedom>  VectorType;
-    typedef itk::Image <VectorType, ImageDimension>   VectorImageType;
-    
+    typedef itk::Image <VectorType, ImageDimension>   VectorImageType;    
     typedef itk::ImageFileReader<VectorImageType> ReaderType;
     
     typename ReaderType::Pointer myReader = ReaderType::New();
@@ -664,7 +666,6 @@ namespace itk
       std::cerr << e;
       throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNifti()");
     }
-    
 			
     typename VectorImageType::Pointer myImage = myReader->GetOutput();
     
@@ -725,8 +726,140 @@ namespace itk
 
     this->UpdateProgress ( 1.0 );
 	
+  }
+
+  template<class T, unsigned int TensorDimension, unsigned int ImageDimension>
+  void
+  TensorImageIO<T,TensorDimension,ImageDimension>
+  ::ReadNiftiFSL (const char* filename)
+  {
+    typedef T                                        PixelType;
+    typedef itk::Image <PixelType, ImageDimension>   ImageType;
+    
+    const unsigned int ImageDimension4=ImageDimension+1;
+    
+    itk::NiftiImageIO::Pointer myIO = itk::NiftiImageIO::New();
+    myIO->SetFileName(filename);
+    myIO->ReadImageInformation();
+    
+    unsigned int numDimensions = myIO->GetNumberOfDimensions();
+    
+    if( numDimensions!=4 )
+    {
+      char message[512];
+      sprintf(message, "Error: Number of dimensions should be: %d, and actually is: %d.", 4, numDimensions);
+      itkExceptionMacro( << message);      
+      return;
+    }
+    
+    typedef itk::Vector<PixelType, DegreesOfFreedom>  VectorType;
+    typedef itk::Image <PixelType, ImageDimension4>   VectorImageType;
+    
+    typedef itk::ImageFileReader<VectorImageType> ReaderType;
+    
+    typename ReaderType::Pointer myReader = ReaderType::New();
+    myReader->SetFileName (filename);
+    myReader->SetImageIO(myIO);
+    
+    try
+    {
+      myReader->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e;
+      throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::ReadNifti()");
+    }    
+			
+    typename VectorImageType::Pointer myImage = myReader->GetOutput();
+    
+    if( m_Output )
+    {
+      m_Output->Initialize();
     }
 
+    typename TensorImageType::RegionType region;
+    typename TensorImageType::RegionType::SizeType size;
+    typename VectorImageType::RegionType::SizeType inputsize = myImage->GetLargestPossibleRegion().GetSize();
+    typename TensorImageType::SpacingType spacing;
+    typename VectorImageType::SpacingType inputspacing = myImage->GetSpacing();
+    typename TensorImageType::DirectionType direction;
+    typename VectorImageType::DirectionType inputdirection = myImage->GetDirection();
+    typename TensorImageType::PointType origin;
+    typename VectorImageType::PointType inputorigin = myImage->GetOrigin();
+    
+    for (unsigned int i=0; i<ImageDimension; i++)
+    {
+      origin[i] = inputorigin[i];
+      spacing[i] = inputspacing[i];
+      size[i] = inputsize[i];
+      for (unsigned int j=0; j<ImageDimension; j++)
+      {
+	direction[i][j] = inputdirection[i][j];
+      }
+    }
+    region.SetSize (size);
+    
+    m_Output->SetRegions (region);
+    m_Output->SetSpacing (spacing);
+    m_Output->SetOrigin (origin);
+    m_Output->SetDirection (direction);
+ 
+    try
+    {
+      m_Output->Allocate();      
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e;
+      throw itk::ExceptionObject (__FILE__,__LINE__,"Error in TensorImageIO::Read() during allocation.");
+    }
+
+    typedef itk::ImageRegionIteratorWithIndex<VectorImageType> InputIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex<TensorImageType> OutputIteratorType;
+    typedef typename InputIteratorType::IndexType InputIndexType;
+    typedef typename OutputIteratorType::IndexType OutputIndexType;
+    
+    InputIteratorType  itIn  (myImage, myImage->GetLargestPossibleRegion());
+    OutputIteratorType itOut (m_Output, m_Output->GetLargestPossibleRegion());
+
+    unsigned long numPixels = m_Output->GetLargestPossibleRegion().GetNumberOfPixels();
+    unsigned long step = numPixels/100;
+    unsigned int ind = 0;
+
+    this->UpdateProgress ( 0.0 );
+    
+    while(!itOut.IsAtEnd())
+    {
+      TensorType tensor;
+      OutputIndexType outIndex = itOut.GetIndex();
+      InputIndexType inIndex;
+      for (unsigned int i=0; i<ImageDimension; i++)
+	inIndex[i] = outIndex[i];
+      
+      for( unsigned int j=0; j<DegreesOfFreedom; j++)
+      {
+	inIndex[ImageDimension] = j;
+	itIn.SetIndex (inIndex);	
+	PixelType value = itIn.Get();
+        tensor[j] = value;
+      }
+      
+      itOut.Set (tensor);
+      
+      ++itOut;
+      ++ind;
+
+      if( (ind%step)==0 )
+      {
+        this->UpdateProgress ( double(ind)/double(numPixels) );
+      }
+      
+    }
+
+    this->UpdateProgress ( 1.0 );
+	
+  }
   
   template<class T, unsigned int TensorDimension, unsigned int ImageDimension>
   void
@@ -1057,12 +1190,12 @@ namespace itk
     myWriter->SetInput(myTensorImage);
     try
     {
-		myWriter->Write();
+      myWriter->Write();
     }
     catch(itk::ExceptionObject &e)
     {
-		std::cerr << e;
-		throw itk::ExceptionObject(__FILE__,__LINE__,"Error in TensorImageIO::WriteNrrd()");
+      std::cerr << e;
+      throw itk::ExceptionObject(__FILE__,__LINE__,"Error in TensorImageIO::WriteNrrd()");
     }
 
   }
@@ -1073,7 +1206,13 @@ namespace itk
   void
   TensorImageIO<T,TensorDimension,ImageDimension>
   ::WriteNifti (const char* filename)
-  {	
+  {
+
+    if (m_UseFSLStyle)
+    {
+      this->WriteNiftiFSL(filename);
+      return;
+    }
     
     typedef itk::Vector<T,      DegreesOfFreedom>    VectorType;
     typedef itk::Image<VectorType, ImageDimension>   VectorImageType;
@@ -1140,16 +1279,130 @@ namespace itk
     myWriter->SetInput(myTensorImage);
     try
     {
-		myWriter->Write();
+      myWriter->Write();
     }
     catch(itk::ExceptionObject &e)
     {
-		std::cerr << e;
-		throw itk::ExceptionObject(__FILE__,__LINE__,"Error in TensorImageIO::WriteNrrd()");
+      std::cerr << e;
+      throw itk::ExceptionObject(__FILE__,__LINE__,"Error in TensorImageIO::WriteNrrd()");
     }
 
   }
 
+  template<class T, unsigned int TensorDimension, unsigned int ImageDimension>
+  void
+  TensorImageIO<T,TensorDimension,ImageDimension>
+  ::WriteNiftiFSL (const char* filename)
+  {	
+    
+    const unsigned int ImageDimension4=ImageDimension+1;
+    typedef T PixelType;    
+    typedef itk::Image <PixelType, ImageDimension>   ImageType;
+    typedef itk::Image <PixelType, ImageDimension4>   VectorImageType;
+
+    typename VectorImageType::Pointer myTensorImage = VectorImageType::New();
+    
+    typename VectorImageType::RegionType outputregion;
+    typename TensorImageType::RegionType::SizeType size = m_Input->GetLargestPossibleRegion().GetSize();
+    typename VectorImageType::RegionType::SizeType outputsize;
+    typename TensorImageType::SpacingType spacing = m_Input->GetSpacing();
+    typename VectorImageType::SpacingType outputspacing;
+    typename TensorImageType::DirectionType direction = m_Input->GetDirection();
+    typename VectorImageType::DirectionType outputdirection;
+    typename TensorImageType::PointType origin = m_Input->GetOrigin();
+    typename VectorImageType::PointType outputorigin;
+
+    std::cout<<"Writing tensor file in FSL style (4D nifti image)"<<std::endl;
+
+    for (unsigned int i=0; i<ImageDimension; i++)
+    {
+      outputorigin[i] = origin[i];
+      outputspacing[i] = spacing[i];
+      outputsize[i] = size[i];
+      for (unsigned int j=0; j<ImageDimension; j++)
+      {
+	outputdirection[i][j] = direction[i][j];
+      }
+    }
+    outputdirection[ImageDimension][ImageDimension] = 1;
+    outputorigin[ImageDimension] = 0;
+    outputspacing[ImageDimension] = 1;
+    outputsize[ImageDimension] = DegreesOfFreedom;
+    outputregion.SetSize (outputsize);
+    
+    myTensorImage->SetRegions (outputregion);
+    myTensorImage->SetSpacing (outputspacing);
+    myTensorImage->SetOrigin (outputorigin);
+    myTensorImage->SetDirection (outputdirection);
+
+    try
+    {
+      myTensorImage->Allocate();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e;
+      throw itk::ExceptionObject (__FILE__,__LINE__,"Error during memory allocation.");
+    }
+
+
+    typedef itk::ImageRegionConstIterator<TensorImageType> InputIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex<VectorImageType> OutputIteratorType;
+    typedef typename InputIteratorType::IndexType InputIndexType;
+    typedef typename OutputIteratorType::IndexType OutputIndexType;
+    
+    InputIteratorType  itIn  (m_Input,m_Input->GetLargestPossibleRegion());    
+    OutputIteratorType itOut (myTensorImage, myTensorImage->GetLargestPossibleRegion());
+
+    unsigned long numPixels = myTensorImage->GetLargestPossibleRegion().GetNumberOfPixels();
+    unsigned long step = numPixels/100;
+    unsigned int ind = 0;
+
+    this->UpdateProgress ( 0.0 );
+    
+    while( !itIn.IsAtEnd() )
+    {
+      TensorType tensor = itIn.Get();
+      InputIndexType inIndex = itIn.GetIndex();
+      OutputIndexType outIndex;
+      for (unsigned int i=0; i<ImageDimension; i++)
+	outIndex[i] = inIndex[i];
+
+      for( unsigned int j=0; j<DegreesOfFreedom; j++)
+      {
+	outIndex[ImageDimension] = j;
+	itOut.SetIndex (outIndex);	
+	PixelType value = tensor[j];
+	itOut.Set (value);
+      }
+      
+      ++itIn;
+      ++ind;
+
+      if( (ind%step)==0 )
+      {
+        this->UpdateProgress ( double(ind)/double(numPixels) );
+      }
+      
+    }
+
+    this->UpdateProgress ( 1.0 );
+    
+    typename itk::ImageFileWriter<VectorImageType>::Pointer myWriter = itk::ImageFileWriter<VectorImageType>::New();
+    myWriter->SetFileName(filename);
+    myWriter->SetInput(myTensorImage);
+    try
+    {
+      myWriter->Write();
+    }
+    catch(itk::ExceptionObject &e)
+    {
+      std::cerr << e;
+      throw itk::ExceptionObject(__FILE__,__LINE__,"Error in TensorImageIO::WriteNrrd()");
+    }
+
+  }
+  
 
   template<class T, unsigned int TensorDimension, unsigned int ImageDimension>
   void
@@ -1186,14 +1439,14 @@ namespace itk
     SpacingType spacing = m_Input->GetSpacing();
     PointType origin = m_Input->GetOrigin();
     yav::Inrimage* inr = new yav::Inrimage(size[0],
-                                 size[1],
-                                 size[2],
-                                 yav::Inrimage::WT_DOUBLE_VECTOR,
-                                 TensorType::NDegreesOfFreedom,
-                                 VM_INTERLACED,
-                                 spacing[0],
-                                 spacing[1],
-                                 spacing[2]);
+					   size[1],
+					   size[2],
+					   yav::Inrimage::WT_DOUBLE_VECTOR,
+					   TensorType::NDegreesOfFreedom,
+					   VM_INTERLACED,
+					   spacing[0],
+					   spacing[1],
+					   spacing[2]);
     // Completement debile: on est oblige de passer par
     // la structure Vec3 pour mettre l'origine de l'image
     // a jour. Y'en a qui ont encore pense tres fort pour
@@ -1263,7 +1516,7 @@ namespace itk
     
     delete inr;
 #else
-	std::cerr << "TTK was not compiled with inrimage support, sorry!" << std::endl;
+    std::cerr << "TTK was not compiled with inrimage support, sorry!" << std::endl;
 #endif
   }
 
