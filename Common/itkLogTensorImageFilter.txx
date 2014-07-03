@@ -37,6 +37,8 @@ namespace itk
                                       
     InputIteratorType itIn(this->GetInput(), outputRegion);
     OutputIteratorType itOut(this->GetOutput(), outputRegion);
+    InputPixelType defaultvalue (static_cast<typename InputPixelType::ValueType>(0.0));
+    
     
     while(!itOut.IsAtEnd() )
     {
@@ -50,7 +52,9 @@ namespace itk
 	}
 	catch( itk::ExceptionObject &)
 	{
-	  throw itk::ExceptionObject(__FILE__,__LINE__,"Error in LogTensorImageFilter::ThreadedGenerateData()");
+	  T = defaultvalue;
+	  // throw itk::ExceptionObject(__FILE__,__LINE__,"Error in LogTensorImageFilter::ThreadedGenerateData()");
+	  itkWarningMacro( << "Negative eigen values at index " << itIn.GetIndex() );
 	}
       }      
       itOut.Set (T);

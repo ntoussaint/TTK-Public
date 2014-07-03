@@ -109,7 +109,6 @@ mark_as_advanced(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT
 find_package(ITK REQUIRED)
 find_package(VTK REQUIRED)
 
-
 ## ###################################################################
 ## Some packages options are required for this project. Check them now
 ## ###################################################################
