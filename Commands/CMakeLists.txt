@@ -212,12 +212,12 @@
 
 
   # A vector field converter
-  add_executable(itkStanleyToITK itkStanleyVectorFieldToITKVectorField.cxx)
+#  add_executable(itkStanleyToITK itkStanleyVectorFieldToITKVectorField.cxx)
 
-  TARGET_LINK_LIBRARIES(itkStanleyToITK
-	ITKCommon
-	${ITKIO_LIBRARIES}
-  )
+#  TARGET_LINK_LIBRARIES(itkStanleyToITK
+#	ITKCommon
+#	${ITKIO_LIBRARIES}
+#  )
 
   
   # registration commands
