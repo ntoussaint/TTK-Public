@@ -643,7 +643,7 @@ namespace itk
     if( numComponents!=DegreesOfFreedom )
     {
       char message[512];
-      std::sprintf(message, "Warning: Number of components should be: %d, and actually is: %d.\n Attempting reading the image as 4 dimension lower triangular image...", DegreesOfFreedom, numComponents);
+      std::sprintf(message, "Warning: Number of components should be: %d, and actually is: %d.\n Attempting reading the image as 4 dimension upper triangular image...", DegreesOfFreedom, numComponents);
       itkWarningMacro( << message);
       this->ReadNiftiFSL (filename);
       return;
